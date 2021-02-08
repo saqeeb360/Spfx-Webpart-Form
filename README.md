@@ -1,5 +1,5 @@
 # salesnpm
-
+![Preview](https://raw.githubusercontent.com/saqeeb360/Spfx-Webpart-Form/main/image.png)
 ## Summary
 
 Short summary on functionality and used technologies.
