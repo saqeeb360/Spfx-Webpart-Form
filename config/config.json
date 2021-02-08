@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "sales-pnp-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/salesPnp/SalesPnpWebPart.js",
+          "manifest": "./src/webparts/salesPnp/SalesPnpWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "SalesPnpWebPartStrings": "lib/webparts/salesPnp/loc/{locale}.js"
+  }
+}
