@@ -5,4 +5,5 @@ export interface ISalesPnpState {
   productNameList : IDropdownOption[];
   customerData : any;
   productData : any;
+  status : string;
 }

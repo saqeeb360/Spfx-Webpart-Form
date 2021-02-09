@@ -1,6 +1,6 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IDropdownOption } from "office-ui-fabric-react";
-import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
+import { SPHttpClient, SPHttpClientResponse,IHttpClientOptions } from "@microsoft/sp-http";
 export class spOperation {
     /**
      * getCustomerNameList
@@ -62,4 +62,53 @@ export class spOperation {
                 });
         });
     }
+    /**
+     * Additems
+     */
+    public validateAndAdditems(context: WebPartContext, customerData: any, productData: any): Promise<string> {
+        // Validation 
+        let staus: string = "";
+        let restApiUrl: string =
+            context.pageContext.web.absoluteUrl +
+            "/_api/web/lists/getByTitle('Orders')/items";
+        const body: string = JSON.stringify({
+            "Title" : "Order1",            
+        });
+        // "CustomerID": customerData,
+        // "ProductID" : productData.ProductID,
+        // "UnitsSold" : productData.NumberofUnits,
+        // "UnitPrice" : productData.ProductUnitPrice,
+        // "OrderStatus" : "Approved",
+        const options: IHttpClientOptions = {
+            body: body,
+        };
+        return new Promise<string>(async (resolve, reject) => {
+            context.spHttpClient.post(restApiUrl, SPHttpClient.configurations.v1, options)
+            .then((response: SPHttpClientResponse) => {
+                console.log(response);
+                if(response.ok){
+                    response.json().then(
+                        (result: any) => {
+                            console.log(result);
+                            resolve("Order with ID " + result.ID + " created Successfully!");
+                        },
+                        (error: any): void => {
+                            reject("error occured while creating order!" + error);
+                        }
+                        );
+                    }
+                    else {
+                        resolve("Order UnSuccessfully!");
+                    }
+                });
+        });
+    }
+
+    /**
+     * updateItem
+     */
+    public updateItem(context: WebPartContext, Orderid:number) {
+        
+    }
+  
 }
