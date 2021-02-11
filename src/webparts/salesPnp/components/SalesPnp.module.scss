@@ -1,10 +1,10 @@
 @import '~office-ui-fabric-react/dist/sass/References.scss';
 
 .salesPnp {
-  background-color: #ffefef;
+  background-color: #fffc61;
   margin:0;
   padding: 0;
-  height:650px;
+  min-height: 650px;
   .container {
     max-width: 700px;
     margin: 0px auto;
@@ -22,7 +22,7 @@
     font-size : 32px !important;
   }
   .emptyheight{
-    height:30px !important;
+    height:28px !important;
     display: inline-block;
   }
   .equalwidth{

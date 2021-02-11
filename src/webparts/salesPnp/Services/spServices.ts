@@ -31,6 +31,33 @@ export class spOperation {
     }
 
     /**
+     * getOrderList
+     */
+    public getOrderList(context : WebPartContext): Promise<IDropdownOption[]> {
+        let orderIdList: IDropdownOption[] = [];
+        let restApiurl: string = context.pageContext.web.absoluteUrl + "/_api/web/lists/getbytitle('Orders')/items?select=Id";
+        return new Promise<IDropdownOption[]>(async (resolve, reject) => {
+            context.spHttpClient
+                .get(restApiurl, SPHttpClient.configurations.v1)
+                .then((response: SPHttpClientResponse) => {
+                    response.json().then((results: any) => {
+                        // console.log(results);
+                        results.value.map((result: any) => {
+                            // console.log(result.CustomerName);
+                            orderIdList.push({
+                                key: result.ID,
+                                text: result.Id
+                            });
+                        });
+                    });
+                    resolve(orderIdList);
+                }, (error: any) => {
+                    reject("error occured in getListTitle() ");
+                });
+        });
+    }
+
+    /**
      * getProductNameList
      */
     public getProductNameList(context: WebPartContext): Promise<IDropdownOption[]> {
@@ -65,32 +92,38 @@ export class spOperation {
     /**
      * Additems
      */
-    public validateAndAdditems(context: WebPartContext, customerData: any, productData: any): Promise<string> {
+    public createItems(context: WebPartContext, customerData: any, productData: any): Promise<string> {
         // Validation 
         let staus: string = "";
         let restApiUrl: string =
             context.pageContext.web.absoluteUrl +
             "/_api/web/lists/getByTitle('Orders')/items";
+        // console.log(customerData.CustomerId,productData.ProductId);
         const body: string = JSON.stringify({
-            "Title" : "Order1",            
+            Customer_x0020_IDId: customerData.CustomerId,
+            Product_x0020_IDId : productData.ProductId,
+            UnitsSold : productData.NumberofUnits,
+            SaleValue: productData.TotalValue,
+            OrderStatus : "Approved",
         });
-        // "CustomerID": customerData,
-        // "ProductID" : productData.ProductID,
-        // "UnitsSold" : productData.NumberofUnits,
-        // "UnitPrice" : productData.ProductUnitPrice,
-        // "OrderStatus" : "Approved",
+        // console.log(body);
         const options: IHttpClientOptions = {
+            headers: {
+                Accept: "application/json;odata=nometadata",
+                "content-type": "application/json;odata=nometadata",
+                "odata-version": "",
+            },
             body: body,
         };
         return new Promise<string>(async (resolve, reject) => {
             context.spHttpClient.post(restApiUrl, SPHttpClient.configurations.v1, options)
             .then((response: SPHttpClientResponse) => {
-                console.log(response);
+                // console.log(response);
                 if(response.ok){
                     response.json().then(
                         (result: any) => {
-                            console.log(result);
-                            resolve("Order with ID " + result.ID + " created Successfully!");
+                            // console.log(result);
+                            resolve("Order with ID: "+result.Id +" created Successfully!");
                         },
                         (error: any): void => {
                             reject("error occured while creating order!" + error);
@@ -103,12 +136,39 @@ export class spOperation {
                 });
         });
     }
+    /**
+     * getUpdateitem
+     */ 
+    public getUpdateitem(context:WebPartContext,data:any) : Promise<any>{
+        let restApiUrl: string =
+      context.pageContext.web.absoluteUrl +
+      "/_api/web/lists/getbytitle('Orders')/items?$filter=(ID eq "+data+")";
+        console.log(restApiUrl);
+        
+      return new Promise<any>(async (resolve,reject) => {
+          context.spHttpClient
+          .get(restApiUrl, SPHttpClient.configurations.v1)
+          .then((response: SPHttpClientResponse) => {
+              console.log(response);
+              if(response.ok){
+                  response.json().then((results) => {
+                      console.log(results);
+                      resolve(results);
+                  });
+               } 
+          },(error:any) => {
+              reject("getUpdateitem failed");
+          });
+      });
+
+    }
 
     /**
      * updateItem
      */
     public updateItem(context: WebPartContext, Orderid:number) {
-        
+        console.log("updateItem Called!");
     }
   
+    
 }
