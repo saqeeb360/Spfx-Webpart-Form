@@ -4,8 +4,16 @@ export interface ISalesPnpState {
   customerNameList : IDropdownOption[];
   productNameList : IDropdownOption[];
   orderIdList : IDropdownOption[];
-  customerData : any;
-  productData : any;
+  CustomerName : any;
+  CustomerId : any;
+  ProductId : any;
+  ProductName : any;
+  ProductUnitPrice : any;
+  ProductExpiryDate : any;
+  ProductType : any;
+  NumberofUnits : any;
+  TotalValue : any;
   orderId : any;
   status : string;
+  whichButton : string,
 }

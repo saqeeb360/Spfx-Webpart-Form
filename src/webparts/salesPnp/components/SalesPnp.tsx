@@ -14,6 +14,7 @@ import {
   Stack,
   IStackTokens,
   IDropdownStyles,
+  PrimaryButton,
 } from "office-ui-fabric-react";
 import { Label } from "office-ui-fabric-react/lib/Label";
 import {
@@ -40,22 +41,19 @@ export default class SalesPnp extends React.Component<
     this.state = {
       customerNameList: [],
       productNameList: [],
-      customerData: {
-        CustomerName: "",
-        CustomerId: "",
-      },
-      productData: {
-        ProductId: "",
-        ProductName: "",
-        ProductUnitPrice: "",
-        ProductExpiryDate: "",
-        ProductType: "",
-        NumberofUnits: "",
-        TotalValue: "",
-      },
       orderIdList : [],
+      CustomerName: "",
+      CustomerId: "",
+      ProductId: "",
+      ProductName: "",
+      ProductUnitPrice: "",
+      ProductExpiryDate: "",
+      ProductType: "",
+      NumberofUnits: "",
+      TotalValue: "",
       orderId : "",
       status: "This is working",
+      whichButton : "Create",
     };
   }
   public componentDidMount() {
@@ -87,7 +85,8 @@ export default class SalesPnp extends React.Component<
     console.log("getCustomerName called!!");
     // console.log(data);
     this.setState({
-      customerData: { CustomerName: data.text, CustomerId: data.key },
+      CustomerName: data.text,
+      CustomerId: data.key,
     });
   };
 
@@ -100,55 +99,75 @@ export default class SalesPnp extends React.Component<
   public getProductName = (event: any, data: any) => {
     console.log("getProductName called!!");
     // console.log(data);
-    let restApiUrl: string =
-      this.props.context.pageContext.web.absoluteUrl +
-      "/_api/web/lists/getbytitle('Products')/items?$filter=(ID eq " +
-      data.key +
-      ") and (ProductName eq '" +
-      data.text +
-      "')";
+    this._spOps.getProductDetails(this.props.context,data)
+    .then((result:any) => {
+      let date = new Date(result.ProductExpiryDate);
+      var totalValue:any;
+      if(this.state.NumberofUnits === ""){
+        // Update Total Value when Number of Unit is not zero! otherwise don't update!!
+        totalValue = this.state.TotalValue;
+      }
+      else if(this.state.NumberofUnits === "0"){
+        totalValue = this.state.TotalValue;
+      }
+      else{
+        totalValue = result.Product_x0020_Unit_x0020_Price * this.state.NumberofUnits;
+      }
+      // console.log(results);
+      // console.log(result.ProductExpiryDate);
+      // console.log(date);
+      this.setState({
+          ProductName: data.text,
+          ProductId: data.key,
+          ProductExpiryDate: date,
+          ProductType: result.ProductType,
+          ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
+          TotalValue: totalValue,
+    });
+  });
+}
+    // let restApiUrl: string =
+    //   this.props.context.pageContext.web.absoluteUrl +
+    //   "/_api/web/lists/getbytitle('Products')/items?$filter=(ID eq " +
+    //   data.key +
+    //   ") and (ProductName eq '" +
+    //   data.text +
+    //   "')";
 
-    this.props.context.spHttpClient
-      .get(restApiUrl, SPHttpClient.configurations.v1)
-      .then((response: SPHttpClientResponse) => {
-        response.json().then((results: any) => {
-          let result: any = results.value[0];
-          let date = new Date(result.ProductExpiryDate);
-          var totalValue:any;
-          if(this.state.productData.NumberofUnits === ""){
-            // Update Total Value when Number of Unit is not zero! otherwise don't update!!
-            totalValue = this.state.productData.TotalValue;
-          }
-          else if(this.state.productData.NumberofUnits === "0"){
-            totalValue = this.state.productData.TotalValue;
-          }
-          else{
-            totalValue = result.Product_x0020_Unit_x0020_Price * this.state.productData.NumberofUnits;
-          }
-          // console.log(results);
-          // console.log(result.ProductExpiryDate);
-          // console.log(date);
-          this.setState({
-            productData: {
-              ProductName: data.text,
-              ProductId: data.key,
-              ProductExpiryDate: date,
-              ProductType: result.ProductType,
-              ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
-              NumberofUnits: this.state.productData.NumberofUnits,
-              TotalValue: totalValue,
-            },
-          });
-        });
-      });
-  };
+    // this.props.context.spHttpClient
+    //   .get(restApiUrl, SPHttpClient.configurations.v1)
+    //   .then((response: SPHttpClientResponse) => {
+    //     response.json().then((results: any) => {
+    //       let result: any = results.value[0];
+          // let date = new Date(result.ProductExpiryDate);
+          // var totalValue:any;
+          // if(this.state.NumberofUnits === ""){
+          //   // Update Total Value when Number of Unit is not zero! otherwise don't update!!
+          //   totalValue = this.state.TotalValue;
+          // }
+          // else if(this.state.NumberofUnits === "0"){
+          //   totalValue = this.state.TotalValue;
+          // }
+          // else{
+          //   totalValue = result.Product_x0020_Unit_x0020_Price * this.state.NumberofUnits;
+          // }
+          // // console.log(results);
+          // // console.log(result.ProductExpiryDate);
+          // // console.log(date);
+          // this.setState({
+          //     ProductName: data.text,
+          //     ProductId: data.key,
+          //     ProductExpiryDate: date,
+          //     ProductType: result.ProductType,
+          //     ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
+          //     TotalValue: totalValue,
 
   /**
    * setNumberofUnits
    */
   public setNumberofUnits = (event: any, data: any) => {
     console.log("setNumberofUnits called!!");
-    console.log(this.state.productData.ProductUnitPrice, data);
+    console.log(this.state.ProductUnitPrice, data);
     var numberofUnits:any;
     var totalValue:any;
     if(data === "0") {
@@ -160,7 +179,7 @@ export default class SalesPnp extends React.Component<
       numberofUnits = data;
       totalValue = "";
     }
-    else if (this.state.productData.ProductUnitPrice === "") {
+    else if (this.state.ProductUnitPrice === "") {
       console.log("setNumberofUnits called -> In ifelse -> UnitPrice = '' statement!!");
       numberofUnits = parseInt(data);
       totalValue = "";
@@ -169,7 +188,7 @@ export default class SalesPnp extends React.Component<
       console.log("setNumberofUnits called -> In else statement!!");
       numberofUnits = parseInt(data);
       var priceofunit: number = parseInt(
-        this.state.productData.ProductUnitPrice
+        this.state.ProductUnitPrice
       );
       totalValue = numberofUnits * priceofunit;
     }
@@ -178,15 +197,8 @@ export default class SalesPnp extends React.Component<
       // console.log(priceofunit);
       // console.log(totalValue);
       this.setState({
-        productData: {
           NumberofUnits: numberofUnits,
           TotalValue: totalValue,
-          ProductId: this.state.productData.ProductId,
-          ProductName: this.state.productData.ProductName,
-          ProductExpiryDate: this.state.productData.ProductExpiryDate,
-          ProductType: this.state.productData.ProductType,
-          ProductUnitPrice: this.state.productData.ProductUnitPrice,
-        },
       });
     return;
   };
@@ -195,27 +207,21 @@ export default class SalesPnp extends React.Component<
    */
   public validateItem = () =>{
     console.log("ValidateItem called!!");
-    let s1 = this.state.customerData;
-    var status : any;
-    for (let key in s1) {
-      if(s1[key] === ""){
-        console.log(key, s1[key],typeof s1[key]);
-        status = "Wrong " + key +"!";
-        this.setState({status : status});
+    let myStateList = [
+      this.state.CustomerId,this.state.CustomerName,this.state.ProductId,
+      this.state.ProductName,this.state.ProductType, this.state.ProductUnitPrice,
+      this.state.NumberofUnits,this.state.TotalValue
+    ]
+    console.log(myStateList);
+    for (let i = 0; i < myStateList.length; i++) {
+      if(myStateList[i] === ""){
+        this.setState({status : "Fill all Details!"});
         return;
       }
     }
-    let s2 = this.state.productData;
-    for (let key in s2) {
-      if(s2[key] === ""){
-        console.log(key, s2[key],typeof s2[key]);
-        status = "Wrong " + key +"!";
-        this.setState({status : status});
-        return;
-      }
-    }
+
     console.log("Validate Complete and Uploading Order Details");
-    this._spOps.createItems(this.props.context,this.state.customerData,this.state.productData)
+    this._spOps.createItems(this.props.context,this.state)
     .then((result:string) =>{
       this.setState({status:result});
     });
@@ -230,15 +236,63 @@ export default class SalesPnp extends React.Component<
       console.log("Empty data");
       return;
     }
-    // Now get the data from rest and call setstate to change the state
-    console.log(data);
-    console.log(this.state.orderIdList);
+    // Now get the Order List details from rest and call setstate to change the state
     this._spOps.getUpdateitem(this.props.context,data)
-    .then((result) => {
-      console.log(result);
+    .then((results) => {
+      var result = results.value[0];
+      // console.log(result);
+      // find customer name
+      var customerId = result.Customer_x0020_IDId;
+      var customerName ;
+      this.state.customerNameList.forEach((item)=> {
+        var flag = false;
+        if(item.key === customerId && flag === false){
+          customerName = item.text;
+          flag = true;
+        }
+      });
+
+      var productId = result.Product_x0020_IDId;
+      var productName;
+      this.state.productNameList.forEach((item)=> {
+        var flag = false;
+        if(item.key === productId && flag === false){
+          productName = item.text;
+          flag = true;
+        }
+      });      
+
+      // Now find the product details to fill
+      var data1 = {key:result.Product_x0020_IDId,text:productName};
+      this.getProductName({},data1);
+
+      this.setState({orderId : data.key,
+        CustomerName: customerName,
+        CustomerId: customerId,
+        NumberofUnits : result.UnitsSold
+      });
+
     });
   }
 
+  /**
+   * controlTabButton
+   */
+  public controlTabButton = (data:any) =>{
+    console.log("Tab Changed");
+    console.log(data);
+    if(data.props.itemKey === "1"){
+      // Add tab clicked
+      // reset the tab and setstate for button
+      this.setState({whichButton : "Create"}); 
+    }
+    else if(data.props.itemKey === "2"){
+      this.setState({whichButton : "Update"}); 
+    }
+    else if(data.props.itemKey === "3"){
+      this.setState({whichButton : "Delete"}); 
+    }
+  }
   /**
      * resetForm
      */
@@ -247,22 +301,55 @@ export default class SalesPnp extends React.Component<
       // Will clear text for active text field - 
       console.log("resetForm called!!");
       this.setState({
-        customerData:{
-          CustomerName:"",
-          CustomerId : null,
-        },
-        productData: {
-          ProductId: null,
-          ProductName: "",
-          ProductUnitPrice: "",
-          ProductExpiryDate: "",
-          ProductType: "",
-          NumberofUnits: "",
-          TotalValue: "",
-        },
+        orderId : null,
+        CustomerName:"",
+        CustomerId : null,
+        ProductId: null,
+        ProductName: "",
+        ProductUnitPrice: "",
+        ProductExpiryDate: "",
+        ProductType: "",
+        NumberofUnits: "",
+        TotalValue: "",
         status : "Reset Done!!"
       });
+      
+      this.componentDidMount();
+  }
 
+  /**
+   * renderButton
+   */
+  public renderButton() {
+    if(this.state.whichButton === "Create" ){
+      return (
+        <PrimaryButton
+          text="Create"
+          onClick={this.validateItem}
+        ></PrimaryButton>
+      );
+    }
+    else if (this.state.whichButton === "Update"){
+      return (
+        <PrimaryButton
+        text="Update"
+        onClick={() => this._spOps.updateItem(this.props.context, this.state)
+        .then((status) => {
+          this.setState({status : status});
+        })}
+      ></PrimaryButton>)
+    }
+    else if(this.state.whichButton === "Delete"){
+      return (
+        <PrimaryButton
+        text="Delete"
+        onClick={() => this._spOps.updateItem(this.props.context, this.state)
+        .then((status) => {
+          this.setState({status : status});
+        })
+      }
+      ></PrimaryButton>);
+    }
   }
 
   public render(): React.ReactElement<ISalesPnpProps> {
@@ -282,21 +369,15 @@ export default class SalesPnp extends React.Component<
             <Pivot
               aria-label="Large Link Size Pivot Example"
               linkSize={PivotLinkSize.large}
+              onLinkClick={this.controlTabButton}
             >
-              <PivotItem headerText="Add ">
+              <PivotItem headerText="Add " itemKey="1">
                 <Label>To add Orders Fill the form below.</Label>
                 <div className={styles.emptyheight}></div>
               </PivotItem>
-              <PivotItem headerText="Update">
+              <PivotItem headerText="Update" itemKey="2">
                 <Label>Select Order Id below.</Label>
-                {/* <TextField
-                  prefix="Order Id"
-                  type="number"
-                  min={1}
-                  required
-                  value={this.state.OrderIdList}
-                  onChange={this.getOrderDetailsToUpdate}
-                /> */}
+
               <Dropdown
               required
               selectedKey={[this.state.orderId]}
@@ -306,7 +387,7 @@ export default class SalesPnp extends React.Component<
               ></Dropdown>
 
               </PivotItem>
-              <PivotItem headerText="Delete">
+              <PivotItem headerText="Delete" itemKey="3">
                 <Label>To update Orders Enter Order Id below.</Label>
                 <div className={styles.emptyheight}></div>
               </PivotItem>
@@ -318,7 +399,7 @@ export default class SalesPnp extends React.Component<
             </div> */}
             <Dropdown
               required
-              selectedKey={[this.state.customerData.CustomerId]}
+              selectedKey={[this.state.CustomerId]}
               id="forReset1"
               label="Enter Customer Name"
               options={this.state.customerNameList}
@@ -329,7 +410,7 @@ export default class SalesPnp extends React.Component<
               <Stack tokens={bigVertStack}>
                 <Dropdown
                   required
-                  selectedKey={[this.state.productData.ProductId]}
+                  selectedKey={[this.state.ProductId]}
                   id="forReset2"
                   label="Enter Product Name"
                   options={this.state.productNameList}
@@ -342,7 +423,7 @@ export default class SalesPnp extends React.Component<
                   type="number"
                   min={1}
                   required
-                  value={this.state.productData.NumberofUnits}
+                  value={this.state.NumberofUnits}
                   onChange={this.setNumberofUnits}
                 />
               </Stack>
@@ -350,23 +431,23 @@ export default class SalesPnp extends React.Component<
                 <TextField
                   label="Product Type"
                   disabled
-                  placeholder={this.state.productData.ProductType}
+                  placeholder={this.state.ProductType}
                 />
                 <TextField
                   label="Product Expiry Date"
                   disabled
                   placeholder={
-                    this.state.productData.ProductExpiryDate === ""
+                    this.state.ProductExpiryDate === ""
                       ? ""
                       : new Date(
-                          this.state.productData.ProductExpiryDate
+                          this.state.ProductExpiryDate
                         ).toDateString()
                   }
                 />
                 <TextField
                   label="Product Unit Price"
                   disabled
-                  placeholder={this.state.productData.ProductUnitPrice}
+                  placeholder={this.state.ProductUnitPrice}
                 />
               </Stack>
             </Stack>
@@ -376,25 +457,21 @@ export default class SalesPnp extends React.Component<
                 ariaLabel="disabled Product Sales Price"
                 readOnly
                 prefix="Rs. "
-                placeholder={this.state.productData.TotalValue}
+                placeholder={this.state.TotalValue}
               />
             </div>
             <div className={styles.emptyheight}>{this.state.status}</div>
             <div className={styles.emptyheight}></div>
             <Stack horizontal tokens={stackTokens}>
-              <DefaultButton
-                text="Create"
-                onClick={this.validateItem}
-              ></DefaultButton>
+              
+              {this.renderButton()}
+              
               <DefaultButton
                 text="Reset"
                 onClick={() => this.resetForm()}
               ></DefaultButton>
 
-              <DefaultButton
-                text="Update"
-                onClick={() => this._spOps.updateItem(this.props.context, 1)}
-              ></DefaultButton>
+              
             </Stack>
 
             <div className={styles.emptyheight}></div>
@@ -404,13 +481,3 @@ export default class SalesPnp extends React.Component<
     );
   }
 }
-// () =>
-//                   this._spOps
-//                     .validateAndCreateitems(
-//                       this.props.context,
-//                       this.state.customerData,
-//                       this.state.productData
-//                     )
-//                     .then((result: string) => {
-//                       this.setState({ status: result });
-//                     })

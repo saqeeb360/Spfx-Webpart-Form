@@ -1,6 +1,6 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IDropdownOption } from "office-ui-fabric-react";
-import { SPHttpClient, SPHttpClientResponse,IHttpClientOptions } from "@microsoft/sp-http";
+import { SPHttpClient, SPHttpClientResponse, IHttpClientOptions } from "@microsoft/sp-http";
 export class spOperation {
     /**
      * getCustomerNameList
@@ -33,7 +33,7 @@ export class spOperation {
     /**
      * getOrderList
      */
-    public getOrderList(context : WebPartContext): Promise<IDropdownOption[]> {
+    public getOrderList(context: WebPartContext): Promise<IDropdownOption[]> {
         let orderIdList: IDropdownOption[] = [];
         let restApiurl: string = context.pageContext.web.absoluteUrl + "/_api/web/lists/getbytitle('Orders')/items?select=Id";
         return new Promise<IDropdownOption[]>(async (resolve, reject) => {
@@ -92,7 +92,7 @@ export class spOperation {
     /**
      * Additems
      */
-    public createItems(context: WebPartContext, customerData: any, productData: any): Promise<string> {
+    public createItems(context: WebPartContext, state: any): Promise<string> {
         // Validation 
         let staus: string = "";
         let restApiUrl: string =
@@ -100,11 +100,11 @@ export class spOperation {
             "/_api/web/lists/getByTitle('Orders')/items";
         // console.log(customerData.CustomerId,productData.ProductId);
         const body: string = JSON.stringify({
-            Customer_x0020_IDId: customerData.CustomerId,
-            Product_x0020_IDId : productData.ProductId,
-            UnitsSold : productData.NumberofUnits,
-            SaleValue: productData.TotalValue,
-            OrderStatus : "Approved",
+            Customer_x0020_IDId: state.CustomerId,
+            Product_x0020_IDId: state.ProductId,
+            UnitsSold: state.NumberofUnits,
+            SaleValue: state.TotalValue,
+            OrderStatus: "Approved",
         });
         // console.log(body);
         const options: IHttpClientOptions = {
@@ -117,17 +117,17 @@ export class spOperation {
         };
         return new Promise<string>(async (resolve, reject) => {
             context.spHttpClient.post(restApiUrl, SPHttpClient.configurations.v1, options)
-            .then((response: SPHttpClientResponse) => {
-                // console.log(response);
-                if(response.ok){
-                    response.json().then(
-                        (result: any) => {
-                            // console.log(result);
-                            resolve("Order with ID: "+result.Id +" created Successfully!");
-                        },
-                        (error: any): void => {
-                            reject("error occured while creating order!" + error);
-                        }
+                .then((response: SPHttpClientResponse) => {
+                    // console.log(response);
+                    if (response.ok) {
+                        response.json().then(
+                            (result: any) => {
+                                // console.log(result);
+                                resolve("Order with ID: " + result.Id + " created Successfully!");
+                            },
+                            (error: any): void => {
+                                reject("error occured while creating order!" + error);
+                            }
                         );
                     }
                     else {
@@ -138,37 +138,100 @@ export class spOperation {
     }
     /**
      * getUpdateitem
-     */ 
-    public getUpdateitem(context:WebPartContext,data:any) : Promise<any>{
+     */
+    public getUpdateitem(context: WebPartContext, data: any): Promise<any> {
         let restApiUrl: string =
-      context.pageContext.web.absoluteUrl +
-      "/_api/web/lists/getbytitle('Orders')/items?$filter=(ID eq "+data+")";
-        console.log(restApiUrl);
-        
-      return new Promise<any>(async (resolve,reject) => {
-          context.spHttpClient
-          .get(restApiUrl, SPHttpClient.configurations.v1)
-          .then((response: SPHttpClientResponse) => {
-              console.log(response);
-              if(response.ok){
-                  response.json().then((results) => {
-                      console.log(results);
-                      resolve(results);
-                  });
-               } 
-          },(error:any) => {
-              reject("getUpdateitem failed");
-          });
-      });
+            context.pageContext.web.absoluteUrl +
+            "/_api/web/lists/getbytitle('Orders')/items?$filter=(ID eq " + data.text + ")";
 
+        return new Promise<any>(async (resolve, reject) => {
+            context.spHttpClient
+                .get(restApiUrl, SPHttpClient.configurations.v1)
+                .then((response: SPHttpClientResponse) => {
+                    if (response.ok) {
+                        response.json().then((results) => {
+                            resolve(results);
+                        });
+                    }
+                }, (error: any) => {
+                    reject("getUpdateitem failed");
+                });
+        });
+
+    }
+
+
+    /**
+     * getProductDetails
+     */
+    public getProductDetails(context: WebPartContext, data: any) {
+        let restApiUrl: string =
+            context.pageContext.web.absoluteUrl +
+            "/_api/web/lists/getbytitle('Products')/items?$filter=(ID eq " +
+            data.key +
+            ") and (ProductName eq '" +
+            data.text +
+            "')";
+
+        return new Promise<any>(async (resolve, reject) => {
+            context.spHttpClient.get(restApiUrl, SPHttpClient.configurations.v1)
+                .then((response: SPHttpClientResponse) => {
+                    if (response.ok) {
+                        response.json().then((results: any) => {
+                            resolve(results.value[0]);
+                        });
+                    }
+                }, (error: any) => {
+                    reject("getUpdateitem failed");
+                });
+        });
     }
 
     /**
      * updateItem
      */
-    public updateItem(context: WebPartContext, Orderid:number) {
+    public updateItem(context: WebPartContext, state: any) {
         console.log("updateItem Called!");
+        // Upload modified data to Order list
+        let staus: string = "";
+        let restApiUrl: string =
+            context.pageContext.web.absoluteUrl +
+            "/_api/web/lists/getByTitle('Orders')/items('" + state.orderId + "')";
+        // console.log(customerData.CustomerId,productData.ProductId);
+        const body: string = JSON.stringify({
+            Customer_x0020_IDId: state.CustomerId,
+            Product_x0020_IDId: state.ProductId,
+            UnitsSold: state.NumberofUnits,
+            SaleValue: state.TotalValue,
+            OrderStatus: "Approved",
+        });
+        // console.log(body);
+        const options: IHttpClientOptions = {
+            headers: {
+                Accept: "application/json;odata=nometadata",
+                "content-type": "application/json;odata=nometadata",
+                "odata-version": "",
+                "IF-MATCH": "*",
+                "x-HTTP-METHOD": "MERGE",
+            },
+            body: body,
+        };
+        return new Promise<string>(async (resolve, reject) => {
+            context.spHttpClient.post(restApiUrl, SPHttpClient.configurations.v1, options)
+                .then((response: SPHttpClientResponse) => {
+                    // console.log(response);
+                    if (response.ok) {
+                        resolve("Order Updated Successfully!");
+                    }
+                    else {
+                        resolve("Order Update Unsuccesful!");
+                    }
+                },
+                    (error: any): void => {
+                        reject("error occured while creating order!" + error);
+                    });
+        });
     }
-  
-    
+
+
 }
