@@ -126,42 +126,6 @@ export default class SalesPnp extends React.Component<
     });
   });
 }
-    // let restApiUrl: string =
-    //   this.props.context.pageContext.web.absoluteUrl +
-    //   "/_api/web/lists/getbytitle('Products')/items?$filter=(ID eq " +
-    //   data.key +
-    //   ") and (ProductName eq '" +
-    //   data.text +
-    //   "')";
-
-    // this.props.context.spHttpClient
-    //   .get(restApiUrl, SPHttpClient.configurations.v1)
-    //   .then((response: SPHttpClientResponse) => {
-    //     response.json().then((results: any) => {
-    //       let result: any = results.value[0];
-          // let date = new Date(result.ProductExpiryDate);
-          // var totalValue:any;
-          // if(this.state.NumberofUnits === ""){
-          //   // Update Total Value when Number of Unit is not zero! otherwise don't update!!
-          //   totalValue = this.state.TotalValue;
-          // }
-          // else if(this.state.NumberofUnits === "0"){
-          //   totalValue = this.state.TotalValue;
-          // }
-          // else{
-          //   totalValue = result.Product_x0020_Unit_x0020_Price * this.state.NumberofUnits;
-          // }
-          // // console.log(results);
-          // // console.log(result.ProductExpiryDate);
-          // // console.log(date);
-          // this.setState({
-          //     ProductName: data.text,
-          //     ProductId: data.key,
-          //     ProductExpiryDate: date,
-          //     ProductType: result.ProductType,
-          //     ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
-          //     TotalValue: totalValue,
-
   /**
    * setNumberofUnits
    */
