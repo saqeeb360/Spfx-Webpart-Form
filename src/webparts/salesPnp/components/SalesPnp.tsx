@@ -104,7 +104,7 @@ export default class SalesPnp extends React.Component<
       CustomerName: data.text,
       CustomerId: data.key,
     });
-  };
+  }
 
   /**
    * getProductName
@@ -141,7 +141,7 @@ export default class SalesPnp extends React.Component<
           TotalValue: totalValue,
         });
       });
-  };
+  }
   /**
    * setNumberofUnits
    */
@@ -179,7 +179,7 @@ export default class SalesPnp extends React.Component<
       TotalValue: totalValue,
     });
     return;
-  };
+  }
   /**
    * validateItem
    */
@@ -209,7 +209,7 @@ export default class SalesPnp extends React.Component<
       .then((result: string) => {
         this.setState({ status: result });
       });
-  };
+  }
   /**
    * valUpdateitem
    */
@@ -256,7 +256,7 @@ export default class SalesPnp extends React.Component<
         NumberofUnits: result.UnitsSold,
       });
     });
-  };
+  }
   /**
    * controlTabButton
    */
@@ -272,7 +272,7 @@ export default class SalesPnp extends React.Component<
     } else if (data.props.itemKey === "3") {
       this.setState({ whichButton: "Delete" });
     }
-  };
+  }
   /**
    * resetForm
    */
@@ -294,7 +294,7 @@ export default class SalesPnp extends React.Component<
       status: "Reset Done!!",
     });
     this.componentDidMount();
-  };
+  }
   /**
    * renderButton
    */
@@ -310,20 +310,22 @@ export default class SalesPnp extends React.Component<
       return (
         <PrimaryButton
           text="Update"
-          onClick={() =>
-            this._spOps
-              .updateItem(this.props.context, this.state)
-              .then((status) => {
-                this.setState({ status: status });
-              })
-          }
+          onClick={() => {
+            this._spOps.updateItem(this.state)
+            .then((status) =>{
+              this.setState({status : status});
+            });
+          }}
         ></PrimaryButton>
       );
     } else if (this.state.whichButton === "Delete") {
       return (
         <PrimaryButton
           text="Delete"
-          onClick={this._spOps.deleteItem2}
+          onClick={() => this._spOps.deleteItem(this.state.orderId)
+            .then((response) =>{
+              this.setState({status : response});
+            })}
           // onClick={() =>
           //   this._spOps
           //     .deleteItem(this.props.context, this.state.orderId)

@@ -33,7 +33,7 @@ export default class SalesPnpWebPart extends BaseClientSideWebPart<ISalesPnpWebP
     console.log("onInit Called!! ");
     return super.onInit().then((_) =>{
       sp.setup({spfxContext : this.context});
-    })
+    });
   }
 
   protected onDispose(): void {

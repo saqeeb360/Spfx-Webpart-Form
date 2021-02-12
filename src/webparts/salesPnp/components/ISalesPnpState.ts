@@ -15,5 +15,5 @@ export interface ISalesPnpState {
   TotalValue : any;
   orderId : any;
   status : string;
-  whichButton : string,
+  whichButton : string;
 }

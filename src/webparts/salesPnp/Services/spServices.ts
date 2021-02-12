@@ -192,87 +192,49 @@ export class spOperation {
     }
 
     /**
+     * getProductDetails(data:any)
+     */
+    public getProductDetails2(data:any) {
+        console.log("getProductDetails2");
+        
+    }
+    /**
      * updateItem
      */
-    public updateItem(context: WebPartContext, state: any) {
+    public updateItem(state: any) {
         console.log("updateItem Called!");
-        // Upload modified data to Order list
-        let restApiUrl: string =
-            context.pageContext.web.absoluteUrl +
-            "/_api/web/lists/getByTitle('Orders')/items('" + state.orderId + "')";
-        // console.log(customerData.CustomerId,productData.ProductId);
-        const body: string = JSON.stringify({
+        const body = {
             Customer_x0020_IDId: state.CustomerId,
             Product_x0020_IDId: state.ProductId,
             UnitsSold: state.NumberofUnits,
             SaleValue: state.TotalValue,
             OrderStatus: "Approved",
-        });
-        // console.log(body);
-        const options: IHttpClientOptions = {
-            headers: {
-                Accept: "application/json;odata=nometadata",
-                "content-type": "application/json;odata=nometadata",
-                "odata-version": "",
-                "IF-MATCH": "*",
-                "x-HTTP-METHOD": "MERGE",
-            },
-            body: body,
         };
         return new Promise<string>(async (resolve, reject) => {
-            context.spHttpClient.post(restApiUrl, SPHttpClient.configurations.v1, options)
-                .then((response: SPHttpClientResponse) => {
-                    // console.log(response);
-                    if (response.ok) {
-                        resolve("Order Updated Successfully!");
-                    }
-                    else {
-                        resolve("Order Update Unsuccesful!");
-                    }
-                },
-                    (error: any): void => {
-                        reject("error occured while creating order!" + error);
-                    });
+            sp.web.lists.getByTitle("Orders")
+                .items
+                .getById(state.orderId)
+                .update(body)
+                .then((response:any) => {
+                    console.log(response);
+                    resolve("Order Updated Successfully!");
+                },(error:any) =>{
+                    reject("Update Unsucessful!");
+                });
         });
     }
     /**
-     * deleteItem(this.props.context, this.state.orderId)
-     */
-    public deleteItem(context: WebPartContext, orderId: any) {
-        console.log("deleteItem Called!");
-        let restApiUrl: string =
-            context.pageContext.web.absoluteUrl +
-            "/_api/web/lists/getByTitle('Orders')/items('" + orderId + "')";
-            //?$filter=(ID eq "+ parseInt(orderId) + ")";
-            
-        const options: IHttpClientOptions = {
-            headers: {
-                Accept: "application/json;odata=nometadata",
-                "content-type": "application/json;odata=nometadata",
-                "odata-version": "",
-                "IF-MATCH": "*",
-                "X-HTTP-METHOD": "DELETE",
-            }
-        };
-        
-        return new Promise<string>(async(resolve,reject) => {
-            context.httpClient.post(restApiUrl, SPHttpClient.configurations.v1,options)
-            .then((response : SPHttpClientResponse) => {
-                resolve("Order Id: " + orderId + "Delete!");
-            },(error:any) =>{
-                reject("Delete not successful!");
-            });
-        });
-    }
-
-    /**
-   * deleteItem2
+   * deleteItem
    */
-  public deleteItem2 = async () =>{
-    console.log("deleteItem2 Called!");
-    // let list = await sp.web.getList("/sites/Jaguar/lists/Orders").items.getById(13).recycle()
-    let list = await sp.web.getList("/sites/Jaguar/lists/Orders");
-    console.log(list);
-  }
+    public deleteItem = async (orderId: any) => {
+        console.log("deleteItem Called!");
+        // let list = await sp.web.getList("/sites/Jaguar/lists/Orders").items.getById(13).recycle()
+        return new Promise<string>(async (resolve, reject) => {
+            sp.web.lists.getByTitle("Orders").items.getById(orderId).recycle()
+                .then(() => {
+                    resolve("Order Id: " + orderId + " Delete!");
+                });
+        });
+    }
 
 }
