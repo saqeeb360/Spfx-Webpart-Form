@@ -22,7 +22,10 @@ import {
   PivotItem,
   PivotLinkSize,
 } from "office-ui-fabric-react/lib/Pivot";
-
+import { sp } from "@pnp/sp";
+import "@pnp/sp/webs";
+import "@pnp/sp/lists";
+import "@pnp/sp/items";
 const stackTokens: IStackTokens = { childrenGap: 100 };
 const bigVertStack: IStackTokens = { childrenGap: 20 };
 const SmallVertStack: IStackTokens = { childrenGap: 20 };
@@ -41,7 +44,7 @@ export default class SalesPnp extends React.Component<
     this.state = {
       customerNameList: [],
       productNameList: [],
-      orderIdList : [],
+      orderIdList: [],
       CustomerName: "",
       CustomerId: "",
       ProductId: "",
@@ -51,9 +54,9 @@ export default class SalesPnp extends React.Component<
       ProductType: "",
       NumberofUnits: "",
       TotalValue: "",
-      orderId : "",
+      orderId: "",
       status: "This is working",
-      whichButton : "Create",
+      whichButton: "Create",
     };
   }
   public componentDidMount() {
@@ -71,11 +74,24 @@ export default class SalesPnp extends React.Component<
     });
 
     // getOrderList
-    this._spOps.getOrderList(this.props.context).then((result:any) => {
-      this.setState({orderIdList : result});
-    })
+    this._spOps.getOrderList(this.props.context).then((result: any) => {
+      this.setState({ orderIdList: result });
+    });
   }
-
+  
+  // ...
+  // protected onInit(): Promise<void> {
+  
+  //   return super.onInit().then(_ => {
+  
+  //     // other init code may be present
+  
+  //     sp.setup({
+  //       spfxContext: this.context
+  //     });
+  //   });
+  // }
+  
   /**
    * getCustomerName
    * this function is called when a dropdown item is changed
@@ -99,118 +115,121 @@ export default class SalesPnp extends React.Component<
   public getProductName = (event: any, data: any) => {
     console.log("getProductName called!!");
     // console.log(data);
-    this._spOps.getProductDetails(this.props.context,data)
-    .then((result:any) => {
-      let date = new Date(result.ProductExpiryDate);
-      var totalValue:any;
-      if(this.state.NumberofUnits === ""){
-        // Update Total Value when Number of Unit is not zero! otherwise don't update!!
-        totalValue = this.state.TotalValue;
-      }
-      else if(this.state.NumberofUnits === "0"){
-        totalValue = this.state.TotalValue;
-      }
-      else{
-        totalValue = result.Product_x0020_Unit_x0020_Price * this.state.NumberofUnits;
-      }
-      // console.log(results);
-      // console.log(result.ProductExpiryDate);
-      // console.log(date);
-      this.setState({
+    this._spOps
+      .getProductDetails(this.props.context, data)
+      .then((result: any) => {
+        let date = new Date(result.ProductExpiryDate);
+        var totalValue: any;
+        if (this.state.NumberofUnits === "") {
+          // Update Total Value when Number of Unit is not zero! otherwise don't update!!
+          totalValue = this.state.TotalValue;
+        } else if (this.state.NumberofUnits === "0") {
+          totalValue = this.state.TotalValue;
+        } else {
+          totalValue =
+            result.Product_x0020_Unit_x0020_Price * this.state.NumberofUnits;
+        }
+        // console.log(results);
+        // console.log(result.ProductExpiryDate);
+        // console.log(date);
+        this.setState({
           ProductName: data.text,
           ProductId: data.key,
           ProductExpiryDate: date,
           ProductType: result.ProductType,
           ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
           TotalValue: totalValue,
-    });
-  });
-}
+        });
+      });
+  };
   /**
    * setNumberofUnits
    */
   public setNumberofUnits = (event: any, data: any) => {
     console.log("setNumberofUnits called!!");
-    console.log(this.state.ProductUnitPrice, data);
-    var numberofUnits:any;
-    var totalValue:any;
-    if(data === "0") {
+    // console.log(this.state.ProductUnitPrice, data);
+    var numberofUnits: any;
+    var totalValue: any;
+    if (data === "0") {
       numberofUnits = data;
       totalValue = "";
-    }
-    else if(data===""){
-      console.log("setNumberofUnits called -> In ifelse -> data = '' statement!!");
+    } else if (data === "") {
+      console.log(
+        "setNumberofUnits called -> In ifelse -> data = '' statement!!"
+      );
       numberofUnits = data;
       totalValue = "";
-    }
-    else if (this.state.ProductUnitPrice === "") {
-      console.log("setNumberofUnits called -> In ifelse -> UnitPrice = '' statement!!");
+    } else if (this.state.ProductUnitPrice === "") {
+      console.log(
+        "setNumberofUnits called -> In ifelse -> UnitPrice = '' statement!!"
+      );
       numberofUnits = parseInt(data);
       totalValue = "";
-    }
-    else{
+    } else {
       console.log("setNumberofUnits called -> In else statement!!");
       numberofUnits = parseInt(data);
-      var priceofunit: number = parseInt(
-        this.state.ProductUnitPrice
-      );
+      var priceofunit: number = parseInt(this.state.ProductUnitPrice);
       totalValue = numberofUnits * priceofunit;
     }
-    
-      // console.log(numberofUnits);
-      // console.log(priceofunit);
-      // console.log(totalValue);
-      this.setState({
-          NumberofUnits: numberofUnits,
-          TotalValue: totalValue,
-      });
+    // console.log(numberofUnits);
+    // console.log(priceofunit);
+    // console.log(totalValue);
+    this.setState({
+      NumberofUnits: numberofUnits,
+      TotalValue: totalValue,
+    });
     return;
   };
   /**
    * validateItem
    */
-  public validateItem = () =>{
+  public validateItem = () => {
     console.log("ValidateItem called!!");
     let myStateList = [
-      this.state.CustomerId,this.state.CustomerName,this.state.ProductId,
-      this.state.ProductName,this.state.ProductType, this.state.ProductUnitPrice,
-      this.state.NumberofUnits,this.state.TotalValue
-    ]
+      this.state.CustomerId,
+      this.state.CustomerName,
+      this.state.ProductId,
+      this.state.ProductName,
+      this.state.ProductType,
+      this.state.ProductUnitPrice,
+      this.state.NumberofUnits,
+      this.state.TotalValue,
+    ];
     console.log(myStateList);
     for (let i = 0; i < myStateList.length; i++) {
-      if(myStateList[i] === ""){
-        this.setState({status : "Fill all Details!"});
+      if (myStateList[i] === "") {
+        this.setState({ status: "Fill all Details!" });
         return;
       }
     }
 
     console.log("Validate Complete and Uploading Order Details");
-    this._spOps.createItems(this.props.context,this.state)
-    .then((result:string) =>{
-      this.setState({status:result});
-    });
-  }
+    this._spOps
+      .createItems(this.props.context, this.state)
+      .then((result: string) => {
+        this.setState({ status: result });
+      });
+  };
   /**
    * valUpdateitem
    */
-  public getOrderDetailsToUpdate = (event:any,data:any) => {
+  public getOrderDetailsToUpdate = (event: any, data: any) => {
     // Valid Order Id -> Not empty -> not zero
     console.log("getOrderDetailsToUpdate called!");
-    if(data === ""){
+    if (data === "") {
       console.log("Empty data");
       return;
     }
     // Now get the Order List details from rest and call setstate to change the state
-    this._spOps.getUpdateitem(this.props.context,data)
-    .then((results) => {
+    this._spOps.getUpdateitem(this.props.context, data).then((results) => {
       var result = results.value[0];
       // console.log(result);
       // find customer name
       var customerId = result.Customer_x0020_IDId;
-      var customerName ;
-      this.state.customerNameList.forEach((item)=> {
+      var customerName;
+      this.state.customerNameList.forEach((item) => {
         var flag = false;
-        if(item.key === customerId && flag === false){
+        if (item.key === customerId && flag === false) {
           customerName = item.text;
           flag = true;
         }
@@ -218,103 +237,105 @@ export default class SalesPnp extends React.Component<
 
       var productId = result.Product_x0020_IDId;
       var productName;
-      this.state.productNameList.forEach((item)=> {
+      this.state.productNameList.forEach((item) => {
         var flag = false;
-        if(item.key === productId && flag === false){
+        if (item.key === productId && flag === false) {
           productName = item.text;
           flag = true;
         }
-      });      
-
-      // Now find the product details to fill
-      var data1 = {key:result.Product_x0020_IDId,text:productName};
-      this.getProductName({},data1);
-
-      this.setState({orderId : data.key,
-        CustomerName: customerName,
-        CustomerId: customerId,
-        NumberofUnits : result.UnitsSold
       });
 
-    });
-  }
+      // Now find the product details to fill
+      var data1 = { key: result.Product_x0020_IDId, text: productName };
+      this.getProductName({}, data1);
 
+      this.setState({
+        orderId: data.key,
+        CustomerName: customerName,
+        CustomerId: customerId,
+        NumberofUnits: result.UnitsSold,
+      });
+    });
+  };
   /**
    * controlTabButton
    */
-  public controlTabButton = (data:any) =>{
+  public controlTabButton = (data: any) => {
     console.log("Tab Changed");
     console.log(data);
-    if(data.props.itemKey === "1"){
+    if (data.props.itemKey === "1") {
       // Add tab clicked
       // reset the tab and setstate for button
-      this.setState({whichButton : "Create"}); 
+      this.setState({ whichButton: "Create" });
+    } else if (data.props.itemKey === "2") {
+      this.setState({ whichButton: "Update" });
+    } else if (data.props.itemKey === "3") {
+      this.setState({ whichButton: "Delete" });
     }
-    else if(data.props.itemKey === "2"){
-      this.setState({whichButton : "Update"}); 
-    }
-    else if(data.props.itemKey === "3"){
-      this.setState({whichButton : "Delete"}); 
-    }
-  }
+  };
   /**
-     * resetForm
-     */
-    public resetForm = () => {
-      // Will reset the state of disable text field - call setstate to change state
-      // Will clear text for active text field - 
-      console.log("resetForm called!!");
-      this.setState({
-        orderId : null,
-        CustomerName:"",
-        CustomerId : null,
-        ProductId: null,
-        ProductName: "",
-        ProductUnitPrice: "",
-        ProductExpiryDate: "",
-        ProductType: "",
-        NumberofUnits: "",
-        TotalValue: "",
-        status : "Reset Done!!"
-      });
-      
-      this.componentDidMount();
-  }
-
+   * resetForm
+   */
+  public resetForm = () => {
+    // Will reset the state of disable text field - call setstate to change state
+    // Will clear text for active text field -
+    console.log("resetForm called!!");
+    this.setState({
+      orderId: null,
+      CustomerName: "",
+      CustomerId: null,
+      ProductId: null,
+      ProductName: "",
+      ProductUnitPrice: "",
+      ProductExpiryDate: "",
+      ProductType: "",
+      NumberofUnits: "",
+      TotalValue: "",
+      status: "Reset Done!!",
+    });
+    this.componentDidMount();
+  };
   /**
    * renderButton
    */
   public renderButton() {
-    if(this.state.whichButton === "Create" ){
+    if (this.state.whichButton === "Create") {
       return (
         <PrimaryButton
           text="Create"
           onClick={this.validateItem}
         ></PrimaryButton>
       );
-    }
-    else if (this.state.whichButton === "Update"){
+    } else if (this.state.whichButton === "Update") {
       return (
         <PrimaryButton
-        text="Update"
-        onClick={() => this._spOps.updateItem(this.props.context, this.state)
-        .then((status) => {
-          this.setState({status : status});
-        })}
-      ></PrimaryButton>)
-    }
-    else if(this.state.whichButton === "Delete"){
+          text="Update"
+          onClick={() =>
+            this._spOps
+              .updateItem(this.props.context, this.state)
+              .then((status) => {
+                this.setState({ status: status });
+              })
+          }
+        ></PrimaryButton>
+      );
+    } else if (this.state.whichButton === "Delete") {
       return (
         <PrimaryButton
-        text="Delete"
-        onClick={() => this._spOps.updateItem(this.props.context, this.state)
-        .then((status) => {
-          this.setState({status : status});
-        })
-      }
-      ></PrimaryButton>);
+          text="Delete"
+          onClick={this._spOps.deleteItem2}
+          // onClick={() =>
+          //   this._spOps
+          //     .deleteItem(this.props.context, this.state.orderId)
+          //     .then((status) => {
+          //       this.setState({ status: status });
+          //     })
+          // }
+        ></PrimaryButton>
+      );
     }
   }
+  
 
   public render(): React.ReactElement<ISalesPnpProps> {
     return (
@@ -335,32 +356,32 @@ export default class SalesPnp extends React.Component<
               linkSize={PivotLinkSize.large}
               onLinkClick={this.controlTabButton}
             >
-              <PivotItem headerText="Add " itemKey="1">
+              <PivotItem headerText="Add" itemKey="1">
                 <Label>To add Orders Fill the form below.</Label>
                 <div className={styles.emptyheight}></div>
               </PivotItem>
               <PivotItem headerText="Update" itemKey="2">
                 <Label>Select Order Id below.</Label>
-
-              <Dropdown
-              required
-              selectedKey={[this.state.orderId]}
-              prefix="Order Id"
-              options={this.state.orderIdList}
-              onChange={this.getOrderDetailsToUpdate}
-              ></Dropdown>
-
+                <Dropdown
+                  required
+                  selectedKey={[this.state.orderId]}
+                  prefix="Order Id"
+                  options={this.state.orderIdList}
+                  onChange={this.getOrderDetailsToUpdate}
+                ></Dropdown>
               </PivotItem>
               <PivotItem headerText="Delete" itemKey="3">
-                <Label>To update Orders Enter Order Id below.</Label>
-                <div className={styles.emptyheight}></div>
+                <Label>Select Order Id below.</Label>
+                <Dropdown
+                  required
+                  selectedKey={[this.state.orderId]}
+                  prefix="Order Id"
+                  options={this.state.orderIdList}
+                  onChange={this.getOrderDetailsToUpdate}
+                ></Dropdown>
               </PivotItem>
             </Pivot>
-            {/* <div className={styles.emptyheight}>
-              {this.state.customerData.CustomerName === "Aman" && (
-                <h1>Messages</h1>
-              )}
-            </div> */}
+
             <Dropdown
               required
               selectedKey={[this.state.CustomerId]}
@@ -368,7 +389,7 @@ export default class SalesPnp extends React.Component<
               label="Enter Customer Name"
               options={this.state.customerNameList}
               onChange={this.getCustomerName}
-              ></Dropdown>
+            ></Dropdown>
 
             <Stack horizontal wrap tokens={stackTokens}>
               <Stack tokens={bigVertStack}>
@@ -403,9 +424,7 @@ export default class SalesPnp extends React.Component<
                   placeholder={
                     this.state.ProductExpiryDate === ""
                       ? ""
-                      : new Date(
-                          this.state.ProductExpiryDate
-                        ).toDateString()
+                      : new Date(this.state.ProductExpiryDate).toDateString()
                   }
                 />
                 <TextField
@@ -427,17 +446,12 @@ export default class SalesPnp extends React.Component<
             <div className={styles.emptyheight}>{this.state.status}</div>
             <div className={styles.emptyheight}></div>
             <Stack horizontal tokens={stackTokens}>
-              
               {this.renderButton()}
-              
               <DefaultButton
                 text="Reset"
                 onClick={() => this.resetForm()}
               ></DefaultButton>
-
-              
             </Stack>
-
             <div className={styles.emptyheight}></div>
           </div>
         </div>

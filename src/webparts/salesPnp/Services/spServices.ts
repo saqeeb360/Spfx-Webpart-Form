@@ -1,6 +1,7 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IDropdownOption } from "office-ui-fabric-react";
 import { SPHttpClient, SPHttpClientResponse, IHttpClientOptions } from "@microsoft/sp-http";
+import { sp } from "@pnp/sp/presets/all";
 export class spOperation {
     /**
      * getCustomerNameList
@@ -70,7 +71,7 @@ export class spOperation {
                     response.json().then((results: any) => {
                         console.log(results);
                         results.value.map((result: any) => {
-                            console.log(result.ProductName);
+                            // console.log(result.ProductName);
                             productNameList.push({
                                 key: result.ID,
                                 text: result.ProductName,
@@ -140,6 +141,7 @@ export class spOperation {
      * getUpdateitem
      */
     public getUpdateitem(context: WebPartContext, data: any): Promise<any> {
+        console.log("getUpdateitem Called!");
         let restApiUrl: string =
             context.pageContext.web.absoluteUrl +
             "/_api/web/lists/getbytitle('Orders')/items?$filter=(ID eq " + data.text + ")";
@@ -148,8 +150,10 @@ export class spOperation {
             context.spHttpClient
                 .get(restApiUrl, SPHttpClient.configurations.v1)
                 .then((response: SPHttpClientResponse) => {
+                    console.log(response);
                     if (response.ok) {
                         response.json().then((results) => {
+                            console.log(results);
                             resolve(results);
                         });
                     }
@@ -193,7 +197,6 @@ export class spOperation {
     public updateItem(context: WebPartContext, state: any) {
         console.log("updateItem Called!");
         // Upload modified data to Order list
-        let staus: string = "";
         let restApiUrl: string =
             context.pageContext.web.absoluteUrl +
             "/_api/web/lists/getByTitle('Orders')/items('" + state.orderId + "')";
@@ -232,6 +235,44 @@ export class spOperation {
                     });
         });
     }
+    /**
+     * deleteItem(this.props.context, this.state.orderId)
+     */
+    public deleteItem(context: WebPartContext, orderId: any) {
+        console.log("deleteItem Called!");
+        let restApiUrl: string =
+            context.pageContext.web.absoluteUrl +
+            "/_api/web/lists/getByTitle('Orders')/items('" + orderId + "')";
+            //?$filter=(ID eq "+ parseInt(orderId) + ")";
+            
+        const options: IHttpClientOptions = {
+            headers: {
+                Accept: "application/json;odata=nometadata",
+                "content-type": "application/json;odata=nometadata",
+                "odata-version": "",
+                "IF-MATCH": "*",
+                "X-HTTP-METHOD": "DELETE",
+            }
+        };
+        
+        return new Promise<string>(async(resolve,reject) => {
+            context.httpClient.post(restApiUrl, SPHttpClient.configurations.v1,options)
+            .then((response : SPHttpClientResponse) => {
+                resolve("Order Id: " + orderId + "Delete!");
+            },(error:any) =>{
+                reject("Delete not successful!");
+            });
+        });
+    }
 
+    /**
+   * deleteItem2
+   */
+  public deleteItem2 = async () =>{
+    console.log("deleteItem2 Called!");
+    // let list = await sp.web.getList("/sites/Jaguar/lists/Orders").items.getById(13).recycle()
+    let list = await sp.web.getList("/sites/Jaguar/lists/Orders");
+    console.log(list);
+  }
 
 }

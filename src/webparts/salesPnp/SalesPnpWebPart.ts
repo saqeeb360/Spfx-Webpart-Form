@@ -10,6 +10,7 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import * as strings from 'SalesPnpWebPartStrings';
 import SalesPnp from './components/SalesPnp';
 import { ISalesPnpProps } from './components/ISalesPnpProps';
+import { sp } from '@pnp/sp/presets/all';
 
 export interface ISalesPnpWebPartProps {
   description: string;
@@ -27,6 +28,12 @@ export default class SalesPnpWebPart extends BaseClientSideWebPart<ISalesPnpWebP
     );
 
     ReactDom.render(element, this.domElement);
+  }
+  protected onInit():Promise<void>{
+    console.log("onInit Called!! ");
+    return super.onInit().then((_) =>{
+      sp.setup({spfxContext : this.context});
+    })
   }
 
   protected onDispose(): void {
