@@ -15,17 +15,25 @@ import {
   IStackTokens,
   IDropdownStyles,
   PrimaryButton,
+  IStyleSet,
+  Slider,
 } from "office-ui-fabric-react";
 import { Label } from "office-ui-fabric-react/lib/Label";
 import {
+  IPivotStyles,
   Pivot,
   PivotItem,
+  PivotLinkFormat,
   PivotLinkSize,
 } from "office-ui-fabric-react/lib/Pivot";
 import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
+const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
+  link: { width: "20%" },
+  linkIsSelected: { width: "20%" },
+};
 const stackTokens: IStackTokens = { childrenGap: 100 };
 const bigVertStack: IStackTokens = { childrenGap: 20 };
 const SmallVertStack: IStackTokens = { childrenGap: 20 };
@@ -52,10 +60,10 @@ export default class SalesPnp extends React.Component<
       ProductUnitPrice: "",
       ProductExpiryDate: "",
       ProductType: "",
-      NumberofUnits: "",
+      NumberofUnits: "7",
       TotalValue: "",
       orderId: "",
-      status: "This is working",
+      status: "",
       whichButton: "Create",
     };
   }
@@ -78,20 +86,6 @@ export default class SalesPnp extends React.Component<
       this.setState({ orderIdList: result });
     });
   }
-  
-  // ...
-  // protected onInit(): Promise<void> {
-  
-  //   return super.onInit().then(_ => {
-  
-  //     // other init code may be present
-  
-  //     sp.setup({
-  //       spfxContext: this.context
-  //     });
-  //   });
-  // }
-  
   /**
    * getCustomerName
    * this function is called when a dropdown item is changed
@@ -143,7 +137,7 @@ export default class SalesPnp extends React.Component<
       });
   }
   /**
-   * setNumberofUnits
+   * setNumberofUnits is called when number of units is changed to store the value in state.
    */
   public setNumberofUnits = (event: any, data: any) => {
     console.log("setNumberofUnits called!!");
@@ -181,10 +175,10 @@ export default class SalesPnp extends React.Component<
     return;
   }
   /**
-   * validateItem
+   * validateItemAndAdd and upload the new item
    */
-  public validateItem = () => {
-    console.log("ValidateItem called!!");
+  public validateItemAndAdd = () => {
+    console.log("validateItemAndAdd called!!");
     let myStateList = [
       this.state.CustomerId,
       this.state.CustomerName,
@@ -210,8 +204,35 @@ export default class SalesPnp extends React.Component<
         this.setState({ status: result });
       });
   }
+
   /**
-   * valUpdateitem
+   * validateItemAndModify
+   */
+  public validateItemAndModify = () => {
+    if (this.state.orderId === "" || this.state.orderId === null) {
+      this.setState({ status: "Enter Order Id" });
+      return;
+    } else {
+      this._spOps.updateItem(this.state).then((status) => {
+        this.setState({ status: status });
+      });
+    }
+  }
+  /**
+   * validateAndDelete
+   */
+  public validateAndDelete = () => {
+    if (this.state.orderId === "" || this.state.orderId === null) {
+      this.setState({ status: "Enter Order Id" });
+      return;
+    } else {
+      this._spOps.deleteItem(this.state.orderId).then((response) => {
+        this.setState({ status: response });
+      });
+    }
+  }
+  /**
+   * getOrderDetailsToUpdate is called when order id field is changed to get the item details.
    */
   public getOrderDetailsToUpdate = (event: any, data: any) => {
     // Valid Order Id -> Not empty -> not zero
@@ -258,7 +279,7 @@ export default class SalesPnp extends React.Component<
     });
   }
   /**
-   * controlTabButton
+   * controlTabButton is called when tabs are changed to store which tab is active.
    */
   public controlTabButton = (data: any) => {
     console.log("Tab Changed");
@@ -296,36 +317,28 @@ export default class SalesPnp extends React.Component<
     this.componentDidMount();
   }
   /**
-   * renderButton
+   * renderButton is used to show active tab's button - eg: for ADD tab button should be SAVE button
    */
-  public renderButton() {
+  public renderButton = () => {
     if (this.state.whichButton === "Create") {
       return (
         <PrimaryButton
-          text="Create"
-          onClick={this.validateItem}
+          text="SAVE"
+          onClick={this.validateItemAndAdd}
         ></PrimaryButton>
       );
     } else if (this.state.whichButton === "Update") {
       return (
         <PrimaryButton
-          text="Update"
-          onClick={() => {
-            this._spOps.updateItem(this.state)
-            .then((status) =>{
-              this.setState({status : status});
-            });
-          }}
+          text="MODIFY"
+          onClick={this.validateItemAndModify}
         ></PrimaryButton>
       );
     } else if (this.state.whichButton === "Delete") {
       return (
         <PrimaryButton
-          text="Delete"
-          onClick={() => this._spOps.deleteItem(this.state.orderId)
-            .then((response) =>{
-              this.setState({status : response});
-            })}
+          text="DELETE"
+          onClick={this.validateAndDelete}
           // onClick={() =>
           //   this._spOps
           //     .deleteItem(this.props.context, this.state.orderId)
@@ -337,7 +350,6 @@ export default class SalesPnp extends React.Component<
       );
     }
   }
-  
 
   public render(): React.ReactElement<ISalesPnpProps> {
     return (
@@ -345,7 +357,7 @@ export default class SalesPnp extends React.Component<
         <div className={styles.container}>
           <div className={styles.row}>
             <div className={styles.column}>
-              <span className={styles.title}>Welcome to SharePoint!</span>
+              <span className={styles.title}>SALES FORM</span>
               {/* <p className={styles.subTitle}>
                 Customize SharePoint experiences using Web Parts.
               </p> */}
@@ -354,15 +366,17 @@ export default class SalesPnp extends React.Component<
           <hr />
           <div>
             <Pivot
+              styles={pivotStyles}
               aria-label="Large Link Size Pivot Example"
               linkSize={PivotLinkSize.large}
+              linkFormat={PivotLinkFormat.tabs}
               onLinkClick={this.controlTabButton}
             >
-              <PivotItem headerText="Add" itemKey="1">
+              <PivotItem headerText="ADD" itemKey="1" itemIcon="AddTo">
                 <Label>To add Orders Fill the form below.</Label>
                 <div className={styles.emptyheight}></div>
               </PivotItem>
-              <PivotItem headerText="Update" itemKey="2">
+              <PivotItem headerText="UPDATE" itemKey="2" itemIcon="Handwriting">
                 <Label>Select Order Id below.</Label>
                 <Dropdown
                   required
@@ -372,7 +386,7 @@ export default class SalesPnp extends React.Component<
                   onChange={this.getOrderDetailsToUpdate}
                 ></Dropdown>
               </PivotItem>
-              <PivotItem headerText="Delete" itemKey="3">
+              <PivotItem headerText="DELETE" itemKey="3" itemIcon="Delete">
                 <Label>Select Order Id below.</Label>
                 <Dropdown
                   required
@@ -404,7 +418,7 @@ export default class SalesPnp extends React.Component<
                   onChange={this.getProductName}
                   styles={dropdownStyles}
                 ></Dropdown>
-                <TextField
+                {/* <TextField
                   id="forReset3"
                   label="Number of Units"
                   type="number"
@@ -412,6 +426,14 @@ export default class SalesPnp extends React.Component<
                   required
                   value={this.state.NumberofUnits}
                   onChange={this.setNumberofUnits}
+                /> */}
+                <Slider
+                  label="Number of Units"
+                  min={0}
+                  max={50}
+                  step={1}
+                  onChanged={this.setNumberofUnits}
+                  value={this.state.NumberofUnits}
                 />
               </Stack>
               <Stack tokens={SmallVertStack}>
@@ -450,7 +472,7 @@ export default class SalesPnp extends React.Component<
             <Stack horizontal tokens={stackTokens}>
               {this.renderButton()}
               <DefaultButton
-                text="Reset"
+                text="CLEAR"
                 onClick={() => this.resetForm()}
               ></DefaultButton>
             </Stack>
