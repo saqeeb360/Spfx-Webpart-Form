@@ -31,8 +31,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 const pivotStyles: Partial<IStyleSet<IPivotStyles>> = {
-  link: { width: "20%" },
-  linkIsSelected: { width: "20%" },
+  link: { width: "22%" },
+  linkIsSelected: { width: "22%" },
 };
 const stackTokens: IStackTokens = { childrenGap: 100 };
 const bigVertStack: IStackTokens = { childrenGap: 20 };
@@ -98,7 +98,7 @@ export default class SalesPnp extends React.Component<
       CustomerName: data.text,
       CustomerId: data.key,
     });
-  }
+  };
 
   /**
    * getProductName
@@ -135,7 +135,7 @@ export default class SalesPnp extends React.Component<
           TotalValue: totalValue,
         });
       });
-  }
+  };
   /**
    * setNumberofUnits is called when number of units is changed to store the value in state.
    */
@@ -173,7 +173,7 @@ export default class SalesPnp extends React.Component<
       TotalValue: totalValue,
     });
     return;
-  }
+  };
   /**
    * validateItemAndAdd and upload the new item
    */
@@ -192,7 +192,7 @@ export default class SalesPnp extends React.Component<
     console.log(myStateList);
     for (let i = 0; i < myStateList.length; i++) {
       if (myStateList[i] === "") {
-        this.setState({ status: "Fill all Details!" });
+        this.setState({ status: "Error! Details missing." });
         return;
       }
     }
@@ -203,34 +203,34 @@ export default class SalesPnp extends React.Component<
       .then((result: string) => {
         this.setState({ status: result });
       });
-  }
+  };
 
   /**
    * validateItemAndModify
    */
   public validateItemAndModify = () => {
     if (this.state.orderId === "" || this.state.orderId === null) {
-      this.setState({ status: "Enter Order Id" });
+      this.setState({ status: "Error! Order ID missing." });
       return;
     } else {
       this._spOps.updateItem(this.state).then((status) => {
         this.setState({ status: status });
       });
     }
-  }
+  };
   /**
    * validateAndDelete
    */
   public validateAndDelete = () => {
     if (this.state.orderId === "" || this.state.orderId === null) {
-      this.setState({ status: "Enter Order Id" });
+      this.setState({ status: "Error! Order ID missing." });
       return;
     } else {
       this._spOps.deleteItem(this.state.orderId).then((response) => {
         this.setState({ status: response });
       });
     }
-  }
+  };
   /**
    * getOrderDetailsToUpdate is called when order id field is changed to get the item details.
    */
@@ -277,23 +277,24 @@ export default class SalesPnp extends React.Component<
         NumberofUnits: result.UnitsSold,
       });
     });
-  }
+  };
   /**
    * controlTabButton is called when tabs are changed to store which tab is active.
    */
   public controlTabButton = (data: any) => {
     console.log("Tab Changed");
     console.log(data);
-    if (data.props.itemKey === "1") {
-      // Add tab clicked
-      // reset the tab and setstate for button
-      this.setState({ whichButton: "Create" });
-    } else if (data.props.itemKey === "2") {
-      this.setState({ whichButton: "Update" });
-    } else if (data.props.itemKey === "3") {
-      this.setState({ whichButton: "Delete" });
-    }
-  }
+    this.resetForm();
+    // if (data.props.itemKey === "1") {
+    //   // Add tab clicked
+    //   // reset the tab and setstate for button
+    //   this.setState({ whichButton: "Create" });
+    // } else if (data.props.itemKey === "2") {
+    //   this.setState({ whichButton: "Update" });
+    // } else if (data.props.itemKey === "3") {
+    //   this.setState({ whichButton: "Delete" });
+    // }
+  };
   /**
    * resetForm
    */
@@ -312,58 +313,182 @@ export default class SalesPnp extends React.Component<
       ProductType: "",
       NumberofUnits: "",
       TotalValue: "",
-      status: "Reset Done!!",
+      status: "",
     });
     this.componentDidMount();
-  }
+  };
   /**
    * renderButton is used to show active tab's button - eg: for ADD tab button should be SAVE button
    */
-  public renderButton = () => {
-    if (this.state.whichButton === "Create") {
+  // public renderButton = () => {
+  //   if (this.state.whichButton === "Create") {
+  //     return (
+  //       <PrimaryButton
+  //         text="SAVE"
+  //         onClick={this.validateItemAndAdd}
+  //       ></PrimaryButton>
+  //     );
+  //   } else if (this.state.whichButton === "Update") {
+  //     return (
+  //       <PrimaryButton
+  //         text="MODIFY"
+  //         onClick={this.validateItemAndModify}
+  //       ></PrimaryButton>
+  //     );
+  //   } else if (this.state.whichButton === "Delete") {
+  //     return (
+  //       <PrimaryButton
+  //         text="DELETE"
+  //         onClick={this.validateAndDelete}
+  //         // onClick={() =>
+  //         //   this._spOps
+  //         //     .deleteItem(this.props.context, this.state.orderId)
+  //         //     .then((status) => {
+  //         //       this.setState({ status: status });
+  //         //     })
+  //         // }
+  //       ></PrimaryButton>
+  //     );
+  //   }
+  // }
+/**
+ * productDetailBox
+ */
+public productDetailBox = () => {
+  // If status is empty then check Product name is filled or not
+  if(this.state.status === ""){
+    if(this.state.ProductName === ""){
+      return  (
+      <Stack
+        className={styles.productDetails}
+        tokens={SmallVertStack}
+      >
+        Please Fill All Fields.
+      </Stack>
+    )}
+    else {
       return (
-        <PrimaryButton
-          text="SAVE"
-          onClick={this.validateItemAndAdd}
-        ></PrimaryButton>
-      );
-    } else if (this.state.whichButton === "Update") {
+      <Stack
+        className={styles.productDetails}
+        tokens={SmallVertStack}
+      >
+        <div>
+          {this.state.ProductType === ""
+            ? ""
+            : "Type : " + this.state.ProductType}
+        </div>
+        <div>
+          {this.state.ProductExpiryDate === ""
+            ? ""
+            : "Available Before : " +
+              new Date(this.state.ProductExpiryDate)
+                .toDateString()
+                .slice(4, 7) +
+              " " +
+              new Date(this.state.ProductExpiryDate)
+                .toDateString()
+                .slice(-4)}
+        </div>
+        <div>
+          {this.state.ProductUnitPrice === ""
+            ? ""
+            : "₹ " + this.state.ProductUnitPrice + "/Unit"}
+        </div>
+      </Stack>
+    )}
+  }
+  else {
+    return (
+      <Stack
+        className={styles.productDetails}
+        tokens={SmallVertStack}
+      >
+        {this.state.status}
+      </Stack>
+    )
+  }
+}
+
+/**
+ * deleteProductBox
+ */
+public deleteProductBox = () => {
+  if(this.state.status === ""){
+    if(this.state.orderId === "" ||this.state.orderId === null ){
       return (
-        <PrimaryButton
-          text="MODIFY"
-          onClick={this.validateItemAndModify}
-        ></PrimaryButton>
-      );
-    } else if (this.state.whichButton === "Delete") {
+        <Stack
+          className={styles.allProduct}
+          tokens={SmallVertStack}
+        >
+          Please Fill Order ID.
+        </Stack>
+      ) 
+    } 
+    else{
       return (
-        <PrimaryButton
-          text="DELETE"
-          onClick={this.validateAndDelete}
-          // onClick={() =>
-          //   this._spOps
-          //     .deleteItem(this.props.context, this.state.orderId)
-          //     .then((status) => {
-          //       this.setState({ status: status });
-          //     })
-          // }
-        ></PrimaryButton>
-      );
+        <Stack
+        className={styles.allProduct}
+        tokens={SmallVertStack}
+        >
+          <div>
+            {"Name : " + this.state.CustomerName}
+          </div>
+          <div>
+            {"Car : " + this.state.ProductName}
+          </div>
+          <div>
+            {"Type : " + this.state.ProductType}
+          </div>
+          <div>
+            {"Available Before : " +
+                new Date(this.state.ProductExpiryDate)
+                  .toDateString()
+                  .slice(4, 7) +
+                " " +
+                new Date(this.state.ProductExpiryDate)
+                  .toDateString()
+                  .slice(-4)}
+          </div>
+          <div>
+            {"Unit Price :  ₹ " + this.state.ProductUnitPrice + "/Unit"}
+          </div>
+          <div>
+            {"Number of Unit :" + this.state.NumberofUnits}
+          </div>
+          <div>
+            {"Total Price  ₹ " + this.state.TotalValue}
+          </div>
+        </Stack>
+      )
     }
   }
+  else {
+    return (
+    <Stack
+      className={styles.allProduct}
+      tokens={SmallVertStack}
+    >
+      {this.state.status}
+    </Stack>
+    )
+  }
+}
 
   public render(): React.ReactElement<ISalesPnpProps> {
     return (
       <div className={styles.salesPnp}>
-        <div className={styles.container}>
-          <div className={styles.row}>
-            <div className={styles.column}>
-              <span className={styles.title}>SALES FORM</span>
-              {/* <p className={styles.subTitle}>
-                Customize SharePoint experiences using Web Parts.
-              </p> */}
-            </div>
+        <div className={styles.row}>
+          <div className={styles.column}>
+            <img
+              src={require("./assests/logo.png")}
+              alt="logo"
+              className={styles.logo}
+            />
+            <span className={styles.title}>Grace, space, pace</span>
           </div>
-          <hr />
+        </div>
+        <hr />
+        <div className={styles.container}>
           <div>
             <Pivot
               styles={pivotStyles}
@@ -372,53 +497,30 @@ export default class SalesPnp extends React.Component<
               linkFormat={PivotLinkFormat.tabs}
               onLinkClick={this.controlTabButton}
             >
-              <PivotItem headerText="ADD" itemKey="1" itemIcon="AddTo">
-                <Label>To add Orders Fill the form below.</Label>
+              <PivotItem headerText="ORDER NOW" itemKey="1" itemIcon="AddTo">
+                {/* <Label>To add Orders Fill the form below.</Label> */}
                 <div className={styles.emptyheight}></div>
-              </PivotItem>
-              <PivotItem headerText="UPDATE" itemKey="2" itemIcon="Handwriting">
-                <Label>Select Order Id below.</Label>
                 <Dropdown
                   required
-                  selectedKey={[this.state.orderId]}
-                  prefix="Order Id"
-                  options={this.state.orderIdList}
-                  onChange={this.getOrderDetailsToUpdate}
+                  selectedKey={[this.state.CustomerId]}
+                  id="forReset1"
+                  label="Customer Name"
+                  options={this.state.customerNameList}
+                  onChange={this.getCustomerName}
                 ></Dropdown>
-              </PivotItem>
-              <PivotItem headerText="DELETE" itemKey="3" itemIcon="Delete">
-                <Label>Select Order Id below.</Label>
-                <Dropdown
-                  required
-                  selectedKey={[this.state.orderId]}
-                  prefix="Order Id"
-                  options={this.state.orderIdList}
-                  onChange={this.getOrderDetailsToUpdate}
-                ></Dropdown>
-              </PivotItem>
-            </Pivot>
 
-            <Dropdown
-              required
-              selectedKey={[this.state.CustomerId]}
-              id="forReset1"
-              label="Enter Customer Name"
-              options={this.state.customerNameList}
-              onChange={this.getCustomerName}
-            ></Dropdown>
-
-            <Stack horizontal wrap tokens={stackTokens}>
-              <Stack tokens={bigVertStack}>
-                <Dropdown
-                  required
-                  selectedKey={[this.state.ProductId]}
-                  id="forReset2"
-                  label="Enter Product Name"
-                  options={this.state.productNameList}
-                  onChange={this.getProductName}
-                  styles={dropdownStyles}
-                ></Dropdown>
-                {/* <TextField
+                <Stack horizontal wrap tokens={stackTokens}>
+                  <Stack tokens={bigVertStack}>
+                    <Dropdown
+                      required
+                      selectedKey={[this.state.ProductId]}
+                      id="forReset2"
+                      label="Product Name"
+                      options={this.state.productNameList}
+                      onChange={this.getProductName}
+                      styles={dropdownStyles}
+                    ></Dropdown>
+                    {/* <TextField
                   id="forReset3"
                   label="Number of Units"
                   type="number"
@@ -427,17 +529,17 @@ export default class SalesPnp extends React.Component<
                   value={this.state.NumberofUnits}
                   onChange={this.setNumberofUnits}
                 /> */}
-                <Slider
-                  label="Number of Units"
-                  min={0}
-                  max={50}
-                  step={1}
-                  onChanged={this.setNumberofUnits}
-                  value={this.state.NumberofUnits}
-                />
-              </Stack>
-              <Stack tokens={SmallVertStack}>
-                <TextField
+                    <Slider
+                      label="Number of Units"
+                      min={0}
+                      max={50}
+                      step={1}
+                      onChanged={this.setNumberofUnits}
+                      value={this.state.NumberofUnits}
+                    />
+                  </Stack>
+                  {this.productDetailBox()}
+                  {/* <TextField
                   label="Product Type"
                   disabled
                   placeholder={this.state.ProductType}
@@ -455,27 +557,125 @@ export default class SalesPnp extends React.Component<
                   label="Product Unit Price"
                   disabled
                   placeholder={this.state.ProductUnitPrice}
-                />
-              </Stack>
-            </Stack>
-            <div>
-              <Label>Total Sales Price</Label>
-              <TextField
-                ariaLabel="disabled Product Sales Price"
-                readOnly
-                prefix="Rs. "
-                placeholder={this.state.TotalValue}
-              />
-            </div>
-            <div className={styles.emptyheight}>{this.state.status}</div>
-            <div className={styles.emptyheight}></div>
-            <Stack horizontal tokens={stackTokens}>
-              {this.renderButton()}
-              <DefaultButton
-                text="CLEAR"
-                onClick={() => this.resetForm()}
-              ></DefaultButton>
-            </Stack>
+                /> */}
+                </Stack>
+                <div>
+                  <Label>Total Sales Price</Label>
+                  <TextField
+                    ariaLabel="disabled Product Sales Price"
+                    readOnly
+                    prefix="₹ "
+                    placeholder={this.state.TotalValue}
+                  />
+                </div>
+                <div className={styles.emptyheight}></div>
+                <Stack
+                  horizontal
+                  tokens={stackTokens}
+                  className={styles.buttonContainer}
+                >
+                  <PrimaryButton
+                    text="SAVE"
+                    className={styles.primaryButton}
+                    onClick={this.validateItemAndAdd}
+                  ></PrimaryButton>
+
+                  <DefaultButton
+                    className={styles.primaryButton}
+                    text="CLEAR"
+                    onClick={() => this.resetForm()}
+                  ></DefaultButton>
+                </Stack>
+              </PivotItem>
+              <PivotItem headerText="UPDATE" itemKey="2" itemIcon="Handwriting">
+                <div className={styles.emptyheight}></div>
+                <Dropdown
+                  required
+                  selectedKey={[this.state.orderId]}
+                  label="Order Id"
+                  options={this.state.orderIdList}
+                  onChange={this.getOrderDetailsToUpdate}
+                ></Dropdown>
+                <Stack horizontal wrap tokens={stackTokens}>
+                  <Stack tokens={bigVertStack}>
+                    <Dropdown
+                      required
+                      selectedKey={[this.state.CustomerId]}
+                      label="Customer Name"
+                      options={this.state.customerNameList}
+                      onChange={this.getCustomerName}
+                      styles={dropdownStyles}
+                    ></Dropdown>
+                    <Dropdown
+                      required
+                      selectedKey={[this.state.ProductId]}
+                      label="Product Name"
+                      options={this.state.productNameList}
+                      onChange={this.getProductName}
+                      styles={dropdownStyles}
+                    ></Dropdown>
+                    <Slider
+                      label="Number of Units"
+                      min={0}
+                      max={50}
+                      step={1}
+                      onChanged={this.setNumberofUnits}
+                      value={this.state.NumberofUnits}
+                    />
+                  </Stack>
+                  {this.productDetailBox()}
+                </Stack>
+                <div>
+                  <Label>Total Sales Price</Label>
+                  <TextField
+                    ariaLabel="disabled Product Sales Price"
+                    readOnly
+                    prefix="₹ "
+                    placeholder={this.state.TotalValue}
+                  />
+                </div>
+                <Stack
+                  horizontal
+                  tokens={stackTokens}
+                  className={styles.buttonContainer}
+                >
+                  <PrimaryButton
+                    className={styles.primaryButton}
+                    text="MODIFY"
+                    onClick={this.validateItemAndModify}
+                  ></PrimaryButton>
+                  <DefaultButton
+                    className={styles.primaryButton}
+                    text="CLEAR"
+                    onClick={() => this.resetForm()}
+                  ></DefaultButton>
+                </Stack>
+              </PivotItem>
+              <PivotItem headerText="DELETE" itemKey="3" itemIcon="Delete">
+                <div className={styles.emptyheight}></div>
+                <Dropdown
+                  required
+                  selectedKey={[this.state.orderId]}
+                  label="Order Id"
+                  options={this.state.orderIdList}
+                  onChange={this.getOrderDetailsToUpdate}
+                ></Dropdown>
+                  {this.deleteProductBox()}
+                  <Stack horizontal tokens={stackTokens} className={styles.buttonContainer}>
+                    <PrimaryButton
+                      className={styles.primaryButton}
+                      text="DELETE"
+                      onClick={this.validateAndDelete}
+                    ></PrimaryButton>
+                    <DefaultButton
+                      className={styles.primaryButton}
+                      text="CLEAR"
+                      onClick={() => this.resetForm()}
+                    ></DefaultButton>
+                  </Stack>
+
+              </PivotItem>
+            </Pivot>
             <div className={styles.emptyheight}></div>
           </div>
         </div>
