@@ -97,8 +97,9 @@ export default class SalesPnp extends React.Component<
     this.setState({
       CustomerName: data.text,
       CustomerId: data.key,
+      status : "",
     });
-  };
+  }
 
   /**
    * getProductName
@@ -133,9 +134,10 @@ export default class SalesPnp extends React.Component<
           ProductType: result.ProductType,
           ProductUnitPrice: result.Product_x0020_Unit_x0020_Price,
           TotalValue: totalValue,
+          status : "",
         });
       });
-  };
+  }
   /**
    * setNumberofUnits is called when number of units is changed to store the value in state.
    */
@@ -171,9 +173,10 @@ export default class SalesPnp extends React.Component<
     this.setState({
       NumberofUnits: numberofUnits,
       TotalValue: totalValue,
+      status : "",
     });
     return;
-  };
+  }
   /**
    * validateItemAndAdd and upload the new item
    */
@@ -203,7 +206,7 @@ export default class SalesPnp extends React.Component<
       .then((result: string) => {
         this.setState({ status: result });
       });
-  };
+  }
 
   /**
    * validateItemAndModify
@@ -217,7 +220,7 @@ export default class SalesPnp extends React.Component<
         this.setState({ status: status });
       });
     }
-  };
+  }
   /**
    * validateAndDelete
    */
@@ -230,7 +233,7 @@ export default class SalesPnp extends React.Component<
         this.setState({ status: response });
       });
     }
-  };
+  }
   /**
    * getOrderDetailsToUpdate is called when order id field is changed to get the item details.
    */
@@ -275,9 +278,10 @@ export default class SalesPnp extends React.Component<
         CustomerName: customerName,
         CustomerId: customerId,
         NumberofUnits: result.UnitsSold,
+        status : "",
       });
     });
-  };
+  }
   /**
    * controlTabButton is called when tabs are changed to store which tab is active.
    */
@@ -285,16 +289,7 @@ export default class SalesPnp extends React.Component<
     console.log("Tab Changed");
     console.log(data);
     this.resetForm();
-    // if (data.props.itemKey === "1") {
-    //   // Add tab clicked
-    //   // reset the tab and setstate for button
-    //   this.setState({ whichButton: "Create" });
-    // } else if (data.props.itemKey === "2") {
-    //   this.setState({ whichButton: "Update" });
-    // } else if (data.props.itemKey === "3") {
-    //   this.setState({ whichButton: "Delete" });
-    // }
-  };
+  }
   /**
    * resetForm
    */
@@ -316,41 +311,8 @@ export default class SalesPnp extends React.Component<
       status: "",
     });
     this.componentDidMount();
-  };
-  /**
-   * renderButton is used to show active tab's button - eg: for ADD tab button should be SAVE button
-   */
-  // public renderButton = () => {
-  //   if (this.state.whichButton === "Create") {
-  //     return (
-  //       <PrimaryButton
-  //         text="SAVE"
-  //         onClick={this.validateItemAndAdd}
-  //       ></PrimaryButton>
-  //     );
-  //   } else if (this.state.whichButton === "Update") {
-  //     return (
-  //       <PrimaryButton
-  //         text="MODIFY"
-  //         onClick={this.validateItemAndModify}
-  //       ></PrimaryButton>
-  //     );
-  //   } else if (this.state.whichButton === "Delete") {
-  //     return (
-  //       <PrimaryButton
-  //         text="DELETE"
-  //         onClick={this.validateAndDelete}
-  //         // onClick={() =>
-  //         //   this._spOps
-  //         //     .deleteItem(this.props.context, this.state.orderId)
-  //         //     .then((status) => {
-  //         //       this.setState({ status: status });
-  //         //     })
-  //         // }
-  //       ></PrimaryButton>
-  //     );
-  //   }
-  // }
+  }
+
 /**
  * productDetailBox
  */
@@ -365,7 +327,8 @@ public productDetailBox = () => {
       >
         Please Fill All Fields.
       </Stack>
-    )}
+    );
+  }
     else {
       return (
       <Stack
@@ -395,7 +358,8 @@ public productDetailBox = () => {
             : "₹ " + this.state.ProductUnitPrice + "/Unit"}
         </div>
       </Stack>
-    )}
+    );
+  }
   }
   else {
     return (
@@ -405,7 +369,7 @@ public productDetailBox = () => {
       >
         {this.state.status}
       </Stack>
-    )
+    );
   }
 }
 
@@ -422,7 +386,7 @@ public deleteProductBox = () => {
         >
           Please Fill Order ID.
         </Stack>
-      ) 
+      ); 
     } 
     else{
       return (
@@ -459,7 +423,7 @@ public deleteProductBox = () => {
             {"Total Price  ₹ " + this.state.TotalValue}
           </div>
         </Stack>
-      )
+      );
     }
   }
   else {
@@ -470,7 +434,7 @@ public deleteProductBox = () => {
     >
       {this.state.status}
     </Stack>
-    )
+    );
   }
 }
 
@@ -520,15 +484,7 @@ public deleteProductBox = () => {
                       onChange={this.getProductName}
                       styles={dropdownStyles}
                     ></Dropdown>
-                    {/* <TextField
-                  id="forReset3"
-                  label="Number of Units"
-                  type="number"
-                  min={1}
-                  required
-                  value={this.state.NumberofUnits}
-                  onChange={this.setNumberofUnits}
-                /> */}
+
                     <Slider
                       label="Number of Units"
                       min={0}
@@ -539,25 +495,7 @@ public deleteProductBox = () => {
                     />
                   </Stack>
                   {this.productDetailBox()}
-                  {/* <TextField
-                  label="Product Type"
-                  disabled
-                  placeholder={this.state.ProductType}
-                />
-                <TextField
-                  label="Product Expiry Date"
-                  disabled
-                  placeholder={
-                    this.state.ProductExpiryDate === ""
-                      ? ""
-                      : new Date(this.state.ProductExpiryDate).toDateString()
-                  }
-                />
-                <TextField
-                  label="Product Unit Price"
-                  disabled
-                  placeholder={this.state.ProductUnitPrice}
-                /> */}
+                  
                 </Stack>
                 <div>
                   <Label>Total Sales Price</Label>
